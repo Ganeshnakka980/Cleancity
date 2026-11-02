@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="origin-when-cross-origin">
+  <title>CleanCity — Analytics & Waste Hotspots</title>
+  <link rel="stylesheet" href="/css/custom.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      <div class="mb-8 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Analytics & Waste Hotspot Intelligence</h1>
+          <p class="text-xs text-slate-500 mt-1">Real-time MongoDB aggregation metrics, resolution times, and density hotspots.</p>
+        </div>
+
+        <div class="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm text-right">
+          <div class="text-[10px] font-bold text-slate-400 uppercase">Avg Resolution Time</div>
+          <div class="text-lg font-extrabold text-emerald-600" id="analytics-avg-time">0 hrs</div>
+        </div>
+      </div>
+
+      <!-- Chart Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Status Breakdown Pie -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Complaint Status Distribution</h3>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Waste Category Bar Chart -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Waste Category Breakdown</h3>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Monthly Trends Line Chart -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between md:col-span-2 lg:col-span-1">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Monthly Complaint Trends</h3>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="trendsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Staff Performance Leaderboard -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Staff Performance Leaderboard</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold uppercase text-slate-400">
+                <tr>
+                  <th class="p-3">Staff Name</th>
+                  <th class="p-3">Assigned</th>
+                  <th class="p-3">Resolved</th>
+                  <th class="p-3">In Progress</th>
+                </tr>
+              </thead>
+              <tbody id="staff-leaderboard-body">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Waste Hotspots Map -->
+        <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
+          <div class="flex items-center justify-between px-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Geospatial Waste Hotspots (500m Clusters)</h3>
+            <span class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">High Density Areas</span>
+          </div>
+          <div id="hotspots-map" class="h-72 w-full rounded-2xl border border-slate-200 z-10"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/js/admin.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/notification.js"></script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CleanCity — Profile & Rewards</title>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <main class="flex-1 p-6 lg:p-10 max-w-5xl mx-auto w-full">
+      <div class="mb-8">
+        <h1 class="text-2xl font-extrabold text-slate-900">Citizen Profile & Rewards</h1>
+        <p class="text-xs text-slate-500 mt-1">Manage your account details and view earned EcoPoints history.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Rewards Card (1 col) -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6 text-center">
+          <div class="w-20 h-20 rounded-3xl bg-emerald-100 text-emerald-600 font-extrabold text-3xl flex items-center justify-center mx-auto shadow-inner">
+            <span id="profile-avatar-initial">U</span>
+          </div>
+
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900" id="profile-name">-</h2>
+            <p class="text-xs text-slate-500" id="profile-email">-</p>
+          </div>
+
+          <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-center">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Total EcoPoints</div>
+            <div class="text-3xl font-extrabold text-emerald-900 my-1" id="profile-points">0</div>
+            <span class="inline-block px-3 py-1 bg-emerald-600 text-white font-extrabold text-xs rounded-full shadow-sm" id="profile-level">Bronze</span>
+          </div>
+
+          <!-- Level Progression Tiers -->
+          <div class="text-left text-xs space-y-2 border-t border-slate-100 pt-4">
+            <div class="font-bold text-slate-700 mb-1">Eco Champion Tiers</div>
+            <div class="flex items-center justify-between"><span>Bronze</span> <span class="font-semibold text-slate-400">0 - 99 pts</span></div>
+            <div class="flex items-center justify-between"><span>Silver</span> <span class="font-semibold text-slate-400">100 - 299 pts</span></div>
+            <div class="flex items-center justify-between"><span>Gold</span> <span class="font-semibold text-slate-400">300 - 599 pts</span></div>
+            <div class="flex items-center justify-between font-bold text-emerald-700"><span>Eco Champion</span> <span>600+ pts</span></div>
+          </div>
+        </div>
+
+        <!-- Right Side: Edit Form & Points History (2 cols) -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Update Profile Form -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Account Information</h3>
+            
+            <form id="profile-form" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full Name</label>
+                <input type="text" id="edit-name" required class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Phone Number</label>
+                <input type="tel" id="edit-phone" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500">
+              </div>
+
+              <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+                Save Profile Changes
+              </button>
+            </form>
+          </div>
+
+          <!-- Points History -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">EcoPoints Transaction History</h3>
+            
+            <div id="reward-history-list" class="space-y-2 max-h-72 overflow-y-auto">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/notification.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = Auth.requireAuth('citizen');
+      if (!user) return;
+
+      renderNavbar('profile');
+      renderSidebar('profile');
+
+      loadProfileData();
+    });
+
+    function loadProfileData() {
+      API.getMe().then(res => {
+        const u = res.data.user;
+        const r = res.data.reward;
+
+        document.getElementById('profile-avatar-initial').textContent = u.name ? u.name.charAt(0) : 'U';
+        document.getElementById('profile-name').textContent = u.name;
+        document.getElementById('profile-email').textContent = u.email;
+        document.getElementById('edit-name').value = u.name;
+        document.getElementById('edit-phone').value = u.phone || '';
+
+        document.getElementById('profile-points').textContent = r ? r.points : u.points;
+        document.getElementById('profile-level').textContent = r ? r.level : 'Bronze';
+
+        renderRewardHistory(r ? r.history : []);
+      });
+
+      document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('edit-name').value.trim();
+        const phone = document.getElementById('edit-phone').value.trim();
+
+        try {
+          const res = await API.request('/users/profile', { method: 'PUT', body: JSON.stringify({ name, phone }) });
+          API.setAuth(API.getToken(), res.data);
+          showToast('Updated', 'Profile updated successfully', 'success');
+          loadProfileData();
+        } catch (err) {
+          showToast('Error', err.message || 'Profile update failed', 'danger');
+        }
+      });
+    }
+
+    function renderRewardHistory(history) {
+      const list = document.getElementById('reward-history-list');
+      if (!history || history.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center">No points transactions recorded yet.</p>`;
+        return;
+      }
+
+      list.innerHTML = history.reverse().map(h => `
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-xs text-slate-800">${h.reason}</div>
+            <div class="text-[10px] text-slate-400">${new Date(h.createdAt).toLocaleString()}</div>
+          </div>
+          <div class="font-extrabold text-emerald-600 text-sm">+${h.points} pts</div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

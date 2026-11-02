@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="origin-when-cross-origin">
+  <title>CleanCity — Complaint Tracking & Details</title>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <main class="flex-1 p-6 lg:p-10 max-w-6xl mx-auto w-full">
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <a href="/citizen/complaints.html" class="text-xs font-bold text-slate-500 hover:text-emerald-600 mb-1 inline-block">&larr; Back to Complaints</a>
+          <h1 class="text-2xl font-extrabold text-slate-900" id="detail-complaint-id">Complaint Details</h1>
+        </div>
+        <div id="detail-status-badge"></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Details (2 cols) -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Photos Section -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Photo Evidence</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span class="block text-xs font-bold text-slate-700 mb-2">Reported Waste Photo</span>
+                <div class="h-56 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                  <img id="detail-report-img" class="w-full h-full object-cover" alt="Reported photo">
+                </div>
+              </div>
+
+              <div id="resolution-photo-container">
+                <span class="block text-xs font-bold text-emerald-700 mb-2">Resolution Proof Photo</span>
+                <div class="h-56 rounded-2xl overflow-hidden bg-emerald-50 border border-emerald-200 flex items-center justify-center text-center p-4">
+                  <p class="text-xs text-slate-400 font-medium" id="resolution-photo-placeholder">Resolution proof photo will appear once staff marks task resolved.</p>
+                  <img id="detail-resolution-img" class="hidden w-full h-full object-cover" alt="Resolution photo">
+                </div>
+              </div>
+            </div>
+
+            <!-- Citizen Verification Action Bar -->
+            <div id="verification-action-bar" class="hidden pt-4 border-t border-slate-100">
+              <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between">
+                <div>
+                  <h4 class="font-bold text-sm text-emerald-900">Is the location cleaned to your satisfaction?</h4>
+                  <p class="text-xs text-emerald-700">Confirm resolution to verify the complaint and earn +20 EcoPoints!</p>
+                </div>
+                <button onclick="verifyComplaintResolution()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition shrink-0">
+                  ✓ Confirm & Verify (+20 Pts)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real Status History Timeline -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Complaint Resolution Timeline</h3>
+            
+            <div class="relative pl-6 space-y-6" id="detail-timeline-container">
+              <!-- Rendered dynamically from backend statusHistory -->
+            </div>
+          </div>
+
+          <!-- Citizen Feedback Section -->
+          <div id="feedback-section" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Citizen Satisfaction Feedback</h3>
+            <div id="feedback-content">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Info Card & Location Map -->
+        <div class="space-y-6">
+          <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Complaint Overview</h3>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <span class="text-slate-400 block font-semibold">Category</span>
+                <span class="font-bold text-slate-800 text-sm" id="detail-category">-</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 block font-semibold">Priority</span>
+                <span class="font-bold capitalize text-slate-800" id="detail-priority">-</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 block font-semibold">Description</span>
+                <p class="text-slate-700 leading-relaxed" id="detail-description">-</p>
+              </div>
+
+              <div>
+                <span class="text-slate-400 block font-semibold">Assigned Staff</span>
+                <span class="font-bold text-slate-800" id="detail-assigned-staff">Unassigned</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 block font-semibold">Reported Date</span>
+                <span class="font-semibold text-slate-700" id="detail-reported-date">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Map -->
+          <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 px-2">Location Map</h3>
+            <p class="text-xs text-slate-600 px-2 truncate font-medium" id="detail-address">-</p>
+            <div id="detail-map" class="h-56 w-full rounded-2xl border border-slate-200 z-10"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/loader.js"></script>
+  <script src="/components/notification.js"></script>
+
+  <script>
+    let currentComplaint = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = Auth.requireAuth(['citizen', 'staff', 'admin']);
+      if (!user) return;
+
+      renderNavbar('complaints');
+      renderSidebar('complaints');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const complaintId = urlParams.get('id');
+
+      if (!complaintId) {
+        window.location.href = '/citizen/complaints.html';
+        return;
+      }
+
+      loadComplaintDetails(complaintId);
+    });
+
+    async function loadComplaintDetails(id) {
+      try {
+        const res = await API.getComplaint(id);
+        currentComplaint = res.data;
+        renderComplaintDetails(currentComplaint);
+      } catch (err) {
+        showToast('Error', err.message || 'Unable to load complaint details', 'danger');
+      }
+    }
+
+    function renderComplaintDetails(c) {
+      document.getElementById('detail-complaint-id').textContent = `${c.complaintId}: ${c.category}`;
+      document.getElementById('detail-status-badge').innerHTML = `
+        <span class="px-4 py-1.5 text-xs font-extrabold rounded-full badge-${c.status}">
+          ${c.status.replace('_', ' ').toUpperCase()}
+        </span>
+      `;
+
+      document.getElementById('detail-category').textContent = c.category;
+      document.getElementById('detail-priority').textContent = `${c.priority.toUpperCase()} priority`;
+      document.getElementById('detail-description').textContent = c.description;
+      document.getElementById('detail-reported-date').textContent = new Date(c.createdAt).toLocaleString();
+      document.getElementById('detail-address').textContent = `📍 ${c.address || 'Location coordinates specified'}`;
+
+      document.getElementById('detail-assigned-staff').textContent = c.assignedTo ? `${c.assignedTo.name} (${c.assignedTo.phone || 'Staff'})` : 'Not assigned yet';
+
+      document.getElementById('detail-report-img').src = c.image || '/uploads/seed-waste-1.svg';
+      if (c.resolutionImage) {
+        document.getElementById('detail-resolution-img').src = c.resolutionImage;
+        document.getElementById('detail-resolution-img').classList.remove('hidden');
+        document.getElementById('resolution-photo-placeholder').classList.add('hidden');
+      }
+
+      // Show Verification Action Bar if status is 'resolved' and user is Citizen owner or Admin
+      const user = API.getUser();
+      const verificationBar = document.getElementById('verification-action-bar');
+      if (c.status === 'resolved' && user && ((c.userId && c.userId._id === user._id) || user.role === 'admin')) {
+        verificationBar.classList.remove('hidden');
+      } else {
+        verificationBar.classList.add('hidden');
+      }
+
+      // Render Map
+      if (c.location && c.location.coordinates) {
+        const lng = c.location.coordinates[0];
+        const lat = c.location.coordinates[1];
+        const map = CleanCityMap.init('detail-map', { lat, lng, zoom: 15 });
+        CleanCityMap.addComplaintMarkers([c]);
+      }
+
+      // Render Dynamic Status History Timeline
+      renderTimeline(c.statusHistory || []);
+
+      // Render Feedback Section
+      renderFeedbackSection(c);
+    }
+
+    async function verifyComplaintResolution() {
+      if (!currentComplaint) return;
+
+      try {
+        await API.updateComplaintStatus(currentComplaint._id, 'verified', 'Verified by citizen reporter');
+        showToast('Complaint Verified! 🎉', 'Thank you for verifying! +20 EcoPoints added to your account.', 'success');
+        loadComplaintDetails(currentComplaint._id);
+      } catch (err) {
+        showToast('Verification Failed', err.message || 'Unable to verify complaint', 'danger');
+      }
+    }
+
+    function renderTimeline(history) {
+      const container = document.getElementById('detail-timeline-container');
+      if (!history || history.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400">No status timeline available.</p>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="timeline-line"></div>
+        ${history.map((step, idx) => `
+          <div class="relative z-10 flex items-start gap-4">
+            <div class="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
+              ${idx + 1}
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex-1">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-extrabold text-xs text-slate-800 capitalize">${step.status.replace('_', ' ').toUpperCase()}</span>
+                <span class="text-[10px] font-semibold text-slate-400">${new Date(step.changedAt).toLocaleString()}</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">${step.note || 'Status updated'}</p>
+              ${step.changedBy ? `<div class="text-[10px] text-slate-400 mt-2 font-medium">Updated by: <span class="font-bold text-slate-700">${step.changedBy.name || 'System'}</span> (${step.changedBy.role || 'user'})</div>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function renderFeedbackSection(c) {
+      const container = document.getElementById('feedback-content');
+      const user = API.getUser();
+
+      if (c.feedback) {
+        container.innerHTML = `
+          <div class="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="text-amber-400 text-lg font-bold">
+                ${'★'.repeat(c.feedback.rating)}${'☆'.repeat(5 - c.feedback.rating)}
+              </div>
+              <span class="text-xs font-bold text-slate-700">${c.feedback.rating} / 5 Stars</span>
+            </div>
+            <p class="text-xs text-slate-600 italic">"${c.feedback.comment || 'No comment provided'}"</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (['resolved', 'verified'].includes(c.status) && user && c.userId && c.userId._id === user._id) {
+        container.innerHTML = `
+          <form id="feedback-form" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Rating (1 to 5 Stars)</label>
+              <select id="rating" required class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-emerald-500">
+                <option value="5">★★★★★ 5 Stars — Excellent Cleanup</option>
+                <option value="4">★★★★☆ 4 Stars — Very Good</option>
+                <option value="3">★★★☆☆ 3 Stars — Average</option>
+                <option value="2">★★☆☆☆ 2 Stars — Unsatisfactory</option>
+                <option value="1">★☆☆☆☆ 1 Star — Poor Work</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Your Feedback Comment</label>
+              <textarea id="comment" rows="2" placeholder="Tell us how well municipal staff handled this issue..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500"></textarea>
+            </div>
+            <button type="submit" id="btn-feedback" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+              Submit Feedback & Earn +5 EcoPoints
+            </button>
+          </form>
+        `;
+
+        document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const rating = document.getElementById('rating').value;
+          const comment = document.getElementById('comment').value;
+
+          try {
+            await API.submitFeedback({ complaintId: c._id, rating, comment });
+            showToast('Thank You!', 'Feedback submitted successfully. +5 EcoPoints awarded!', 'success');
+            loadComplaintDetails(c._id);
+          } catch (err) {
+            showToast('Error', err.message || 'Feedback submission failed', 'danger');
+          }
+        });
+      } else {
+        container.innerHTML = `<p class="text-xs text-slate-400">Feedback will become available once the complaint is marked as resolved by municipal staff.</p>`;
+      }
+    }
+
+    function refreshCurrentPageData() {
+      if (currentComplaint) {
+        loadComplaintDetails(currentComplaint._id);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CleanCity — System Settings & Audit Logs</title>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      <div class="mb-8">
+        <h1 class="text-2xl font-extrabold text-slate-900">System Audit Logs & Security Trail</h1>
+        <p class="text-xs text-slate-500 mt-1">Audit log of key administrative actions, status transitions, and user management events.</p>
+      </div>
+
+      <!-- Audit Logs Table -->
+      <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold uppercase text-slate-400">
+              <tr>
+                <th class="p-4">Timestamp</th>
+                <th class="p-4">Actor</th>
+                <th class="p-4">Action</th>
+                <th class="p-4">Event Details</th>
+              </tr>
+            </thead>
+            <tbody id="audit-logs-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/admin.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/notification.js"></script>
+</body>
+</html>

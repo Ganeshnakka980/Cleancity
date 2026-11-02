@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="origin-when-cross-origin">
+  <title>CleanCity — Admin Control Center</title>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      <!-- Admin Banner -->
+      <div class="bg-gradient-to-r from-purple-700 to-indigo-800 rounded-3xl p-6 lg:p-8 text-white shadow-xl shadow-purple-200/50 mb-8">
+        <div class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold mb-2">ADMINISTRATOR CONTROL CENTER</div>
+        <h1 class="text-2xl lg:text-3xl font-extrabold">CleanCity Operations Overview</h1>
+        <p class="text-xs lg:text-sm text-purple-100 mt-1">Monitor live civic complaints, track waste hotspots, and assign municipal staff.</p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Reports</div>
+          <div class="text-2xl font-extrabold text-slate-900" id="admin-stat-total">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">Pending</div>
+          <div class="text-2xl font-extrabold text-amber-600" id="admin-stat-pending">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">Assigned</div>
+          <div class="text-2xl font-extrabold text-blue-600" id="admin-stat-assigned">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-purple-500 uppercase tracking-wider mb-1">In Progress</div>
+          <div class="text-2xl font-extrabold text-purple-600" id="admin-stat-in-progress">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-emerald-500 uppercase tracking-wider mb-1">Resolved</div>
+          <div class="text-2xl font-extrabold text-emerald-600" id="admin-stat-resolved">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-red-500 uppercase tracking-wider mb-1">Critical/High</div>
+          <div class="text-2xl font-extrabold text-red-600" id="admin-stat-high">0</div>
+        </div>
+      </div>
+
+      <!-- Live Map Card -->
+      <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-3">
+        <div class="flex items-center justify-between px-2">
+          <h2 class="text-base font-extrabold text-slate-900">Live Civic Complaint & Hotspots Map</h2>
+          <span class="text-xs font-bold text-slate-400">🔴 Hotspots Overlay Active</span>
+        </div>
+        <div id="admin-live-map" class="h-[480px] w-full rounded-2xl border border-slate-200 z-10"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/js/admin.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/notification.js"></script>
+</body>
+</html>

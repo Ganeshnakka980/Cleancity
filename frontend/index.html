@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="origin-when-cross-origin">
+  <title>CleanCity — Report. Track. Clean.</title>
+  <link rel="stylesheet" href="/css/custom.css">
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <!-- Hero Section -->
+  <header class="relative pt-32 pb-20 lg:pt-40 lg:pb-32 bg-gradient-to-b from-emerald-50/70 via-white to-slate-50 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold mb-6">
+            <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
+            SMART CIVIC WASTE MANAGEMENT PLATFORM
+          </div>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-none mb-6">
+            Report. Track. <br/>
+            <span class="text-emerald-600">Clean.</span>
+          </h1>
+          <p class="text-lg text-slate-600 leading-relaxed mb-8 max-w-xl">
+            CleanCity empowers citizens and municipal authorities to connect seamlessly. Spot garbage, snap a photo, share your GPS location, and watch civic teams resolve issues in real time.
+          </p>
+          <div class="flex flex-wrap items-center gap-4">
+            <a href="/citizen/report.html" class="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-200 transition transform hover:-translate-y-0.5">
+              + Report Waste Now
+            </a>
+            <a href="/citizen/map.html" class="px-6 py-3.5 bg-white hover:bg-slate-100 text-slate-800 font-extrabold rounded-2xl border border-slate-200 shadow-sm transition">
+              Explore Live Map
+            </a>
+          </div>
+
+          <!-- Quick Stats Banner -->
+          <div class="grid grid-cols-3 gap-4 mt-12 pt-8 border-t border-slate-200">
+            <div>
+              <div class="text-2xl font-extrabold text-slate-900" id="landing-stat-total">120+</div>
+              <div class="text-xs font-semibold text-slate-500">Reports Handled</div>
+            </div>
+            <div>
+              <div class="text-2xl font-extrabold text-emerald-600" id="landing-stat-resolved">94%</div>
+              <div class="text-xs font-semibold text-slate-500">Resolution Rate</div>
+            </div>
+            <div>
+              <div class="text-2xl font-extrabold text-slate-900">24 Hours</div>
+              <div class="text-xs font-semibold text-slate-500">Avg Clean Time</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Map Preview Card -->
+        <div class="bg-white p-4 rounded-3xl shadow-2xl border border-slate-100 relative">
+          <div class="flex items-center justify-between mb-3 px-2">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+              <span class="text-xs font-bold text-slate-800">LIVE CIVIC ACTIVITY MAP</span>
+            </div>
+            <span class="text-xs font-semibold text-slate-400">Mumbai / Thane Region</span>
+          </div>
+          <div id="landing-map" class="h-80 w-full rounded-2xl border border-slate-200 z-10"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Simple 4-Step Process</h2>
+        <h3 class="text-3xl font-extrabold text-slate-900 sm:text-4xl">How CleanCity Works</h3>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100 relative group hover:bg-emerald-50/50 transition">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white font-extrabold text-xl flex items-center justify-center mb-6 shadow-md shadow-emerald-200">1</div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Spot Waste</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">Notice garbage dumps, overflowing bins, plastic waste, or illegal debris in your neighborhood.</p>
+        </div>
+
+        <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100 relative group hover:bg-emerald-50/50 transition">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white font-extrabold text-xl flex items-center justify-center mb-6 shadow-md shadow-emerald-200">2</div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Report It</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">Upload a photo, auto-detect GPS location, pick a waste category, and submit in under 1 minute.</p>
+        </div>
+
+        <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100 relative group hover:bg-emerald-50/50 transition">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white font-extrabold text-xl flex items-center justify-center mb-6 shadow-md shadow-emerald-200">3</div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Staff Responds</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">Municipal administrators assign field staff who accept tasks, clean the site, and upload proof photos.</p>
+        </div>
+
+        <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100 relative group hover:bg-emerald-50/50 transition">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white font-extrabold text-xl flex items-center justify-center mb-6 shadow-md shadow-emerald-200">4</div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Earn Rewards</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">Track live progress on your visual timeline, leave feedback, and earn EcoPoints for cleaner cities.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-20 bg-slate-50 border-t border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Full-Stack Capabilities</h2>
+        <h3 class="text-3xl font-extrabold text-slate-900 sm:text-4xl">Smart City Waste Management</h3>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-6">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Geospatial 2dsphere Queries</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">MongoDB 2dsphere indexing enables instant nearby complaint discovery within 1km, 5km, and 10km radii.</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mb-6">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Server-Side Duplicate Detection</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">Prevents redundant filings by identifying active complaints near the same coordinates in similar categories.</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mb-6">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Geospatial Hotspot Analysis</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">MongoDB aggregation pipelines group high-density complaint clusters to guide municipal staff deployment.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-12 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs">
+      <div class="font-extrabold text-lg text-white mb-2">Clean<span class="text-emerald-500">City</span></div>
+      <p class="text-slate-500 mb-4">"Report. Track. Clean." — BCA Final Year Full-Stack Project</p>
+      <p class="text-slate-600">&copy; 2026 CleanCity Platform. Built with Node.js, Express, MongoDB Atlas, Socket.IO, Leaflet.js, and Tailwind CSS.</p>
+    </div>
+  </footer>
+
+  <!-- Core JS Imports -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/notification.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNavbar('landing');
+
+      // Initialize Landing Map
+      CleanCityMap.init('landing-map', { lat: 19.076, lng: 72.8777, zoom: 11 });
+
+      // Fetch public complaints for landing map
+      API.getNearbyComplaints(19.076, 72.8777, 25)
+        .then(res => {
+          if (res.data) {
+            CleanCityMap.addComplaintMarkers(res.data);
+          }
+        })
+        .catch(err => console.warn(err));
+    });
+  </script>
+</body>
+</html>

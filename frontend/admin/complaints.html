@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CleanCity — Admin Complaint Management</title>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      <div class="mb-8">
+        <h1 class="text-2xl font-extrabold text-slate-900">Complaint Registry & Staff Assignment</h1>
+        <p class="text-xs text-slate-500 mt-1">Assign field staff, update priorities, and manage complaint lifecycle.</p>
+      </div>
+
+      <!-- Filters & Search -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Search</label>
+          <input type="text" id="search-input" placeholder="Search ID or description..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</label>
+          <select id="status-filter" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="assigned">Assigned</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Category</label>
+          <select id="category-filter" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+            <option value="">All Categories</option>
+            <option value="General Garbage">General Garbage</option>
+            <option value="Plastic Waste">Plastic Waste</option>
+            <option value="Overflowing Bin">Overflowing Bin</option>
+            <option value="Illegal Dumping">Illegal Dumping</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold uppercase text-slate-400">
+              <tr>
+                <th class="p-4">Complaint ID</th>
+                <th class="p-4">Category</th>
+                <th class="p-4">Address</th>
+                <th class="p-4">Priority</th>
+                <th class="p-4">Status</th>
+                <th class="p-4">Assigned Staff</th>
+                <th class="p-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-complaints-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="pagination-container"></div>
+    </main>
+  </div>
+
+  <!-- Staff Assignment Modal -->
+  <div id="assign-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Assign Municipal Staff</h3>
+        <button onclick="Modal.close('assign-modal')" class="text-slate-400 font-bold">&times;</button>
+      </div>
+
+      <p class="text-xs text-slate-500 mb-4">Complaint: <span class="font-bold text-slate-800" id="assign-complaint-label"></span></p>
+
+      <form onsubmit="submitAssignStaff(event)" class="space-y-4">
+        <input type="hidden" id="assign-complaint-id">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Select Active Staff Member</label>
+          <select id="assign-staff-select" required class="w-full px-4 py-3 text-xs rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-emerald-500">
+            <!-- Options populated dynamically -->
+          </select>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-lg transition">
+          Confirm Staff Assignment
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Priority Update Modal -->
+  <div id="priority-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Change Complaint Priority</h3>
+        <button onclick="Modal.close('priority-modal')" class="text-slate-400 font-bold">&times;</button>
+      </div>
+
+      <form onsubmit="submitUpdatePriority(event)" class="space-y-4">
+        <input type="hidden" id="priority-complaint-id">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Select Priority Level</label>
+          <select id="priority-select" required class="w-full px-4 py-3 text-xs rounded-xl border border-slate-200 bg-white">
+            <option value="low">Low — Minor issue</option>
+            <option value="medium">Medium — Standard civic issue</option>
+            <option value="high">High — Significant accumulation</option>
+            <option value="critical">Critical — Major health hazard</option>
+          </select>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl shadow-lg transition">
+          Update Priority
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/admin.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/loader.js"></script>
+  <script src="/components/modal.js"></script>
+  <script src="/components/notification.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAdminComplaintsTable();
+    });
+
+    async function loadAdminComplaintsTable() {
+      const body = document.getElementById('admin-complaints-table-body');
+      body.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-xs text-slate-400">Loading complaints registry...</td></tr>`;
+
+      try {
+        const res = await API.getComplaints('?limit=20');
+        const complaints = res.data || [];
+
+        if (complaints.length === 0) {
+          body.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-xs text-slate-400">No complaints found.</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = complaints.map(c => `
+          <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
+            <td class="p-4 font-extrabold text-slate-800">${c.complaintId}</td>
+            <td class="p-4 text-slate-700 font-semibold">${c.category}</td>
+            <td class="p-4 text-slate-500 max-w-xs truncate">${c.address || 'Location specified'}</td>
+            <td class="p-4"><span class="px-2 py-0.5 font-bold rounded-full priority-${c.priority} capitalize">${c.priority}</span></td>
+            <td class="p-4"><span class="px-2 py-0.5 font-bold rounded-full badge-${c.status}">${c.status.replace('_', ' ').toUpperCase()}</span></td>
+            <td class="p-4 font-semibold text-slate-700">${c.assignedTo ? c.assignedTo.name : '<span class="text-slate-400 italic">Unassigned</span>'}</td>
+            <td class="p-4">
+              <div class="flex items-center gap-2">
+                <button onclick="openAssignStaffModal('${c._id}', '${c.complaintId}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-lg transition">Assign</button>
+                <button onclick="openPriorityModal('${c._id}', '${c.priority}')" class="px-2.5 py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold rounded-lg transition">Priority</button>
+                <a href="/citizen/complaint-details.html?id=${c._id}" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition">View</a>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-xs text-red-500">Error loading registry.</td></tr>`;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="origin-when-cross-origin">
+  <title>CleanCity — Live Interactive Map</title>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <main class="flex-1 p-6 lg:p-8 max-w-7xl mx-auto w-full flex flex-col">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Live Interactive Map</h1>
+          <p class="text-xs text-slate-500 mt-1">Explore real-time waste reports, nearby issues, and active cleanups.</p>
+        </div>
+
+        <button onclick="detectUserLocationOnMap()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition self-start sm:self-auto">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Detect My Nearby Issues
+        </button>
+      </div>
+
+      <!-- Filters Bar -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Search Radius</label>
+          <select id="map-radius" onchange="fetchMapComplaints()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+            <option value="1">1 km Radius</option>
+            <option value="5" selected>5 km Radius</option>
+            <option value="10">10 km Radius</option>
+            <option value="25">25 km Region</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status Filter</label>
+          <select id="map-status" onchange="filterMapMarkers()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="assigned">Assigned</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="verified">Verified</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Category Filter</label>
+          <select id="map-category" onchange="filterMapMarkers()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+            <option value="">All Categories</option>
+            <option value="General Garbage">General Garbage</option>
+            <option value="Plastic Waste">Plastic Waste</option>
+            <option value="Overflowing Bin">Overflowing Bin</option>
+            <option value="Illegal Dumping">Illegal Dumping</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Map View -->
+      <div class="bg-white p-2 rounded-3xl border border-slate-100 shadow-sm flex-1 min-h-[500px] relative">
+        <div id="interactive-live-map" class="h-full w-full rounded-2xl min-h-[500px] z-10"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/notification.js"></script>
+
+  <script>
+    let currentMapLat = 19.076;
+    let currentMapLng = 72.8777;
+    let rawComplaintsData = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNavbar('map');
+      renderSidebar('map');
+
+      CleanCityMap.init('interactive-live-map', { lat: currentMapLat, lng: currentMapLng, zoom: 12 });
+      fetchMapComplaints();
+    });
+
+    function detectUserLocationOnMap() {
+      if (!navigator.geolocation) {
+        showToast('Error', 'Geolocation not supported', 'danger');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          currentMapLat = pos.coords.latitude;
+          currentMapLng = pos.coords.longitude;
+          const radius = parseFloat(document.getElementById('map-radius').value) || 5;
+
+          CleanCityMap.addUserLocationMarker(currentMapLat, currentMapLng, radius);
+          fetchMapComplaints();
+        },
+        () => {
+          showToast('GPS Error', 'Using default center location', 'warning');
+        }
+      );
+    }
+
+    function fetchMapComplaints() {
+      const radius = document.getElementById('map-radius').value;
+      API.getNearbyComplaints(currentMapLat, currentMapLng, radius)
+        .then((res) => {
+          rawComplaintsData = res.data || [];
+          filterMapMarkers();
+        })
+        .catch(() => {
+          showToast('Map Error', 'Failed to load nearby complaints', 'danger');
+        });
+    }
+
+    function filterMapMarkers() {
+      const status = document.getElementById('map-status').value;
+      const category = document.getElementById('map-category').value;
+
+      const filtered = rawComplaintsData.filter((c) => {
+        if (status && c.status !== status) return false;
+        if (category && c.category !== category) return false;
+        return true;
+      });
+
+      CleanCityMap.addComplaintMarkers(filtered);
+    }
+  </script>
+</body>
+</html>

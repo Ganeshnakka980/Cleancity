@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="origin-when-cross-origin">
+  <title>CleanCity — Report Waste</title>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Form Container -->
+    <main class="flex-1 p-6 lg:p-10 max-w-5xl mx-auto w-full">
+      <div class="mb-8">
+        <h1 class="text-2xl font-extrabold text-slate-900">Report Waste Issue</h1>
+        <p class="text-xs text-slate-500 mt-1">Upload a photo, pinpoint the GPS location, and alert municipal authorities.</p>
+      </div>
+
+      <form id="report-form" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Left Column: Media & Details -->
+        <div class="space-y-6">
+          <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">1. Upload Waste Photo *</label>
+            
+            <div class="relative border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50">
+              <input type="file" id="image" name="image" accept="image/jpeg,image/jpg,image/png,image/webp" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+              <div class="space-y-2">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="text-sm font-bold text-slate-700">Click to upload photo</div>
+                <div class="text-[11px] text-slate-400">JPG, PNG, or WEBP (Max 5MB)</div>
+              </div>
+            </div>
+
+            <!-- Image Preview -->
+            <div id="image-preview" class="hidden mt-4 rounded-2xl overflow-hidden border border-slate-200 h-48 bg-slate-100">
+              <img id="preview-img" class="w-full h-full object-cover" alt="Waste preview">
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">2. Waste Category *</label>
+              <select id="category" name="category" required class="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                <option value="">Select waste type</option>
+                <option value="General Garbage">General Garbage</option>
+                <option value="Plastic Waste">Plastic Waste</option>
+                <option value="Overflowing Bin">Overflowing Bin</option>
+                <option value="Illegal Dumping">Illegal Dumping</option>
+                <option value="Construction Waste">Construction Waste</option>
+                <option value="E-Waste">E-Waste</option>
+                <option value="Organic Waste">Organic Waste</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">3. Problem Description *</label>
+              <textarea id="description" name="description" required rows="3" placeholder="Describe the issue, landmarks, or amount of waste..." class="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">4. Priority Rating</label>
+              <select id="priority" name="priority" class="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                <option value="low">Low — Minor litter</option>
+                <option value="medium" selected>Medium — Standard bin/dump issue</option>
+                <option value="high">High — Heavy accumulation blocking path</option>
+                <option value="critical">Critical — Major health/safety hazard</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Location & GPS -->
+        <div class="space-y-6">
+          <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">5. Confirm Location & GPS *</label>
+              <button type="button" id="btn-gps" onclick="handleUseGPS()" class="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-xs rounded-xl flex items-center gap-1.5 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Use My Current Location
+              </button>
+            </div>
+
+            <!-- Leaflet Interactive Picker Map -->
+            <div id="report-picker-map" class="h-64 w-full rounded-2xl border border-slate-200 z-10"></div>
+            <p class="text-[11px] text-slate-400 text-center">Click or drag the marker on the map to fine-tune exact location</p>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase">Latitude</label>
+                <input type="text" id="latitude" name="latitude" readonly required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-700">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase">Longitude</label>
+                <input type="text" id="longitude" name="longitude" readonly required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-700">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Detected Address</label>
+              <input type="text" id="address" name="address" placeholder="Address will auto-fill or enter manually..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+          </div>
+
+          <button type="submit" id="btn-submit-report" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl shadow-xl shadow-emerald-200 text-base transition">
+            Submit Waste Complaint
+          </button>
+        </div>
+
+      </form>
+    </main>
+  </div>
+
+  <!-- Duplicate Complaint Warning Modal -->
+  <div id="duplicate-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 text-center">
+      <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 mb-1">Similar Complaint Detected Nearby</h3>
+      <p class="text-xs text-slate-500 mb-4">A report matching your category has already been filed near this location:</p>
+
+      <div id="duplicate-modal-content"></div>
+
+      <div class="flex gap-3">
+        <button id="btn-view-duplicate" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition">
+          View Existing Report
+        </button>
+        <button onclick="forceSubmitComplaint()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition">
+          Submit Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/js/report.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/modal.js"></script>
+  <script src="/components/notification.js"></script>
+</body>
+</html>

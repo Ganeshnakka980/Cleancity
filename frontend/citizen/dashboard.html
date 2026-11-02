@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="origin-when-cross-origin">
+  <title>CleanCity — Citizen Dashboard</title>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <div class="flex flex-1 pt-16">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      <!-- Welcome Header -->
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-3xl p-6 lg:p-8 text-white shadow-xl shadow-emerald-200/50 mb-8 relative overflow-hidden">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold mb-2">CITIZEN PORTAL</div>
+            <h1 class="text-2xl lg:text-3xl font-extrabold">Welcome back, <span id="user-welcome-name">Citizen</span>! 👋</h1>
+            <p class="text-xs lg:text-sm text-emerald-100 mt-1">Thank you for keeping our streets and neighborhoods clean.</p>
+          </div>
+
+          <div class="flex items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+            <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">🌟</div>
+            <div>
+              <div class="text-[10px] uppercase font-bold text-emerald-200 tracking-wider">Your EcoPoints</div>
+              <div class="text-2xl font-extrabold" id="user-eco-points">0</div>
+              <div class="text-[10px] font-bold text-emerald-300 capitalize" id="user-eco-level">Bronze Level</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions & Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Reports</div>
+          <div class="text-2xl font-extrabold text-slate-900" id="stat-total-reports">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">Pending</div>
+          <div class="text-2xl font-extrabold text-amber-600" id="stat-pending">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-purple-500 uppercase tracking-wider mb-1">In Progress</div>
+          <div class="text-2xl font-extrabold text-purple-600" id="stat-in-progress">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-xs font-bold text-emerald-500 uppercase tracking-wider mb-1">Resolved</div>
+          <div class="text-2xl font-extrabold text-emerald-600" id="stat-resolved">0</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Recent Complaints (Left 2 cols) -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-extrabold text-slate-900">Your Recent Complaints</h2>
+            <a href="/citizen/complaints.html" class="text-xs font-bold text-emerald-600 hover:underline">View All &rarr;</a>
+          </div>
+
+          <div id="recent-complaints-list" class="space-y-3">
+            <!-- Dynamic Cards -->
+          </div>
+        </div>
+
+        <!-- Mini Live Map Preview (Right col) -->
+        <div class="space-y-4">
+          <h2 class="text-lg font-extrabold text-slate-900">Complaints Nearby</h2>
+          <div class="bg-white p-3 rounded-3xl border border-slate-100 shadow-sm">
+            <div id="dashboard-mini-map" class="h-64 w-full rounded-2xl border border-slate-200 z-10"></div>
+            <a href="/citizen/map.html" class="block text-center mt-3 py-2 text-xs font-bold text-emerald-600 hover:bg-emerald-50 rounded-xl transition">
+              Open Full Interactive Map &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/components/navbar.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/loader.js"></script>
+  <script src="/components/notification.js"></script>
+</body>
+</html>
